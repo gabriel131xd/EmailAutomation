@@ -2,8 +2,10 @@ from flask import Flask, request, jsonify
 from classificar import classificar_email
 from responder import sugerir_resposta
 from utils import extrair_texto_arquivo
+from flask_cors import CORS 
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}}) 
 
 @app.route("/", methods=["GET"])
 def home():
