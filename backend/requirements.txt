@@ -1,0 +1,11 @@
+flask
+flask-cors
+gunicorn
+tranformer
+torch
+nltk
+spacy
+PyPDF2
+python-dotenv
+request >= 2.32
+openai>= 1.0.0
