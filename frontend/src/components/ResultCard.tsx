@@ -13,7 +13,7 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(result.resposta_sugerida);
+      await navigator.clipboard.writeText(result.resposta_sugerida || '');
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -38,7 +38,7 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
   return (
     <div className="card fade-in">
       <div className="flex items-start justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Resultado da Análise</h2>
+        <h2 className="text-xl font-semibold">Resultado da Análise</h2>
         <span className={`badge ${getCategoryColor(result.classificacao.categoria)}`}>
           {result.classificacao.categoria}
         </span>
@@ -89,10 +89,11 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
           </button>
         </div>
 
+        {/* CAIXA DE RESPOSTA com contraste forçado */}
         <textarea
-          value={result.resposta_sugerida}
+          value={result.resposta_sugerida || ''}
           readOnly
-          className="textarea-custom min-h-[100px] bg-gray-50"
+          className="textarea-custom response-box min-h-[120px]"
         />
       </div>
 
@@ -111,9 +112,9 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
 
         {showEmailText && (
           <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 whitespace-pre-wrap">
-              {result.email_texto.length > 500
-                ? result.email_texto.substring(0, 500) + '...'
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              {result.email_texto.length > 1000
+                ? result.email_texto.substring(0, 1000) + '...'
                 : result.email_texto}
             </p>
           </div>

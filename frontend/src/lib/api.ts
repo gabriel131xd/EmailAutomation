@@ -28,14 +28,20 @@ async function fetchWithTimeout(input: RequestInfo, init: RequestInit = {}, ms =
   }
 }
 
-// Verificar saúde da API
+// Verificar saúde da API com retries (Render pode "acordar")
 export async function checkHealth(): Promise<boolean> {
-  try {
-    const response = await fetchWithTimeout(`${API_BASE}/`, {}, 10000);
-    return response.ok;
-  } catch {
-    return false;
+  const tries = 3;
+  for (let i = 0; i < tries; i++) {
+    try {
+      const res = await fetchWithTimeout(`${API_BASE}/`, {}, 8000);
+      if (res.ok) return true;
+    } catch {
+      // ignore e tenta de novo
+    }
+    // backoff pequeno
+    await new Promise(r => setTimeout(r, 500 * (i + 1)));
   }
+  return false;
 }
 
 // Analisar texto (JSON)

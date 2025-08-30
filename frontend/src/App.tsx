@@ -2,22 +2,51 @@ import { useState, useEffect } from 'react';
 import { Mail, Send, AlertCircle, Loader2, RefreshCw } from 'lucide-react';
 import UploadZone from './components/UploadZone';
 import ResultCard from './components/ResultCard';
-import { analyzeText, analyzeFile, checkHealth, ApiResponse, ApiError } from './lib/api';
+import { analyzeText, analyzeFile, ApiResponse, ApiError } from './lib/api';
+
+// health check simples com retries (sem mudar api.ts)
+async function pingHealth(url: string, tries = 3) {
+  const backoff = (i: number) => new Promise((r) => setTimeout(r, 500 * (i + 1)));
+  for (let i = 0; i < tries; i++) {
+    try {
+      const ctrl = new AbortController();
+      const id = setTimeout(() => ctrl.abort(), 8000);
+      const res = await fetch(`${url}/`, { signal: ctrl.signal });
+      clearTimeout(id);
+      if (res.ok) return true;
+    } catch (_) {
+      // tenta de novo
+    }
+    await backoff(i);
+  }
+  return false;
+}
 
 function App() {
   const [emailText, setEmailText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
+
+  // controle do banner
+  const [apiUp, setApiUp] = useState(false);
+  const [checkedOnce, setCheckedOnce] = useState(false);
+
+  // pega a base da API do .env para o ping local
+  const API_BASE = import.meta.env.VITE_API_BASE as string;
 
   useEffect(() => {
-    checkApiHealth();
-  }, []);
+    (async () => {
+      const ok = await pingHealth(API_BASE);
+      setApiUp(ok);
+      setCheckedOnce(true);
+    })();
+  }, [API_BASE]);
 
-  const checkApiHealth = async () => {
-    const healthy = await checkHealth();
-    setApiHealthy(healthy);
+  const recheck = async () => {
+    const ok = await pingHealth(API_BASE);
+    setApiUp(ok);
+    setCheckedOnce(true);
   };
 
   const handleAnalyzeText = async () => {
@@ -28,6 +57,8 @@ function App() {
     try {
       const response = await analyzeText(emailText);
       setResult(response);
+      setApiUp(true);       // marcou saudável após sucesso
+      setCheckedOnce(true);
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError.message || 'Erro ao analisar o texto');
@@ -43,7 +74,11 @@ function App() {
     try {
       const response = await analyzeFile(file);
       setResult(response);
-      if ((response as any)?.email_texto) setEmailText((response as any).email_texto);
+      if ((response as any)?.email_texto) {
+        setEmailText((response as any).email_texto);
+      }
+      setApiUp(true);       // marcou saudável após sucesso
+      setCheckedOnce(true);
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError.message || 'Erro ao analisar o arquivo');
@@ -72,8 +107,8 @@ function App() {
           <p className="text-blue-100 text-lg">Classificação & Resposta Automática de E-mails</p>
         </div>
 
-        {/* API Status */}
-        {apiHealthy === false && (
+        {/* Banner de saúde (só mostra se já checou e ainda não subiu) */}
+        {checkedOnce && !apiUp && !isAnalyzing && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start space-x-3">
             <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div>
@@ -81,7 +116,7 @@ function App() {
                 <strong>API fora do ar.</strong> Em hosts gratuitos a primeira chamada pode demorar alguns segundos para “acordar”.
               </p>
               <button
-                onClick={checkApiHealth}
+                onClick={recheck}
                 className="mt-2 inline-flex items-center space-x-2 text-yellow-700 hover:text-yellow-800 text-sm underline"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -95,7 +130,7 @@ function App() {
           {/* Entrada */}
           <div className="space-y-6">
             <div className="card">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Análise de E-mail</h2>
+              <h2 className="text-xl font-semibold mb-4">Análise de E-mail</h2>
 
               <div className="space-y-4">
                 <div>
@@ -106,7 +141,7 @@ function App() {
                     value={emailText}
                     onChange={(e) => setEmailText(e.target.value)}
                     placeholder="Cole aqui o texto do e-mail que deseja analisar..."
-                    className="textarea-custom min-h-[200px]"
+                    className="textarea-custom result-area min-h-[200px]"
                     disabled={isAnalyzing}
                   />
                 </div>
@@ -143,7 +178,7 @@ function App() {
 
             {/* Upload */}
             <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Ou envie um arquivo (.txt / .pdf)</h3>
+              <h3 className="text-lg font-semibold mb-4">Ou envie um arquivo (.txt / .pdf)</h3>
               <UploadZone onFileSelect={handleFileUpload} disabled={isAnalyzing} />
             </div>
 

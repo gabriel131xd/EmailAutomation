@@ -68,9 +68,9 @@ export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) 
           onChange={handleFileInput}
           disabled={disabled}
         />
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center text-slate-900">
           <Upload className={`w-12 h-12 mb-4 ${isDragActive ? 'text-blue-500' : 'text-gray-400'}`} />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">
+          <h3 className="text-lg font-medium mb-1">
             {isDragActive ? 'Solte o arquivo aqui' : 'Upload de arquivo'}
           </h3>
           <p className="text-sm text-gray-600 mb-4 text-center">
