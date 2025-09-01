@@ -8,12 +8,10 @@ body {
   margin: 0;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff; /* texto global claro para o fundo roxo */
+  color: #fff;
 }
 
-/* ====== Componentes customizados ====== */
 .card {
-  /* card sempre com texto escuro pra contraste dentro do fundo roxo */
   @apply bg-white text-slate-900 rounded-2xl shadow-lg p-6;
 }
 
@@ -25,17 +23,14 @@ body {
   @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
 }
 
-/* textareas e campos de entrada SEMPRE com fundo branco e texto escuro */
 .textarea-custom {
   @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white text-slate-900 placeholder:text-slate-400;
 }
 
-/* caixa específica de saída (resposta sugerida) com contraste explícito */
 .response-box {
   @apply bg-white text-slate-900 placeholder:text-slate-400;
 }
 
-/* área de input grande da esquerda */
 .result-area {
   @apply bg-white text-slate-900 placeholder:text-slate-400;
 }
@@ -62,7 +57,6 @@ body {
 .progress-bar  { @apply w-full bg-gray-200 rounded-full h-2; }
 .progress-fill { @apply bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out; }
 
-/* ====== Animações ====== */
 .fade-in { animation: fadeIn 0.5s ease-in; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
@@ -70,3 +64,17 @@ body {
 }
 .spinner { animation: spin 1s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.toast {
+  @apply fixed bottom-4 left-1/2 -translate-x-1/2 z-50
+         bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg
+         text-sm;
+}
+.toast-success { @apply bg-emerald-600; }
+.toast-error   { @apply bg-rose-600; }
+
+.container-responsive { @apply max-w-4xl mx-auto px-4; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in { animation: none; }
+  .spinner { animation: none; }
+}

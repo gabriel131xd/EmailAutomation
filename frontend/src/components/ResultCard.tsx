@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Copy, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Copy, CheckCircle, ChevronDown, ChevronUp, FileDown, FileJson, RefreshCw } from 'lucide-react';
 import { ApiResponse } from '../lib/api';
 
 interface ResultCardProps {
   result: ApiResponse;
   onReset?: () => void;
+  onNewAnalysis?: () => void;
 }
 
-export default function ResultCard({ result, onReset }: ResultCardProps) {
+export default function ResultCard({ result, onReset, onNewAnalysis }: ResultCardProps) {
   const [copied, setCopied] = useState(false);
   const [showEmailText, setShowEmailText] = useState(false);
 
@@ -19,6 +20,26 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
     } catch (err) {
       console.error('Erro ao copiar:', err);
     }
+  };
+
+  const downloadTxt = () => {
+    const blob = new Blob([result.resposta_sugerida || ''], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'resposta_sugerida.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadJson = () => {
+    const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analise_email.json';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const getCategoryColor = (category: string) => {
@@ -37,7 +58,7 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
 
   return (
     <div className="card fade-in">
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-6 gap-3">
         <h2 className="text-xl font-semibold">Resultado da Análise</h2>
         <span className={`badge ${getCategoryColor(result.classificacao.categoria)}`}>
           {result.classificacao.categoria}
@@ -67,33 +88,60 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
       </div>
 
       <div className="space-y-3 mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <label className="text-sm font-medium text-gray-700">Resposta Sugerida</label>
-          <button
-            onClick={handleCopy}
-            className={`flex items-center space-x-1 px-3 py-1 rounded-md text-sm transition-colors ${
-              copied ? 'bg-green-100 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-            }`}
-          >
-            {copied ? (
-              <>
-                <CheckCircle className="w-4 h-4" />
-                <span>Copiado!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" />
-                <span>Copiar</span>
-              </>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleCopy}
+              className={`px-3 py-1 rounded-md text-sm transition-colors inline-flex items-center gap-1 ${
+                copied ? 'bg-green-100 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+              aria-label="Copiar resposta sugerida"
+              title="Copiar resposta sugerida"
+            >
+              {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? 'Copiado!' : 'Copiar'}
+            </button>
+
+            <button
+              onClick={downloadTxt}
+              className="px-3 py-1 rounded-md text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 inline-flex items-center gap-1"
+              aria-label="Baixar resposta como .txt"
+              title="Baixar .txt"
+            >
+              <FileDown className="w-4 h-4" />
+              .txt
+            </button>
+
+            <button
+              onClick={downloadJson}
+              className="px-3 py-1 rounded-md text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 inline-flex items-center gap-1"
+              aria-label="Baixar análise como .json"
+              title="Baixar .json"
+            >
+              <FileJson className="w-4 h-4" />
+              .json
+            </button>
+
+            {onNewAnalysis && (
+              <button
+                onClick={onNewAnalysis}
+                className="px-3 py-1 rounded-md text-sm bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-1"
+                aria-label="Nova análise"
+                title="Nova análise"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Nova análise
+              </button>
             )}
-          </button>
+          </div>
         </div>
 
-        {/* CAIXA DE RESPOSTA com contraste forçado */}
         <textarea
           value={result.resposta_sugerida || ''}
           readOnly
           className="textarea-custom response-box min-h-[120px]"
+          aria-label="Texto da resposta sugerida"
         />
       </div>
 
@@ -101,8 +149,12 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
         <button
           onClick={() => setShowEmailText(!showEmailText)}
           className="flex items-center justify-between w-full p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+          aria-expanded={showEmailText}
+          aria-controls="email-analisado"
         >
-          <span className="text-sm font-medium text-gray-700">Ver e-mail analisado</span>
+          <span className="text-sm font-medium text-gray-700">
+            {showEmailText ? 'Ocultar e-mail analisado' : 'Ver e-mail analisado'}
+          </span>
           {showEmailText ? (
             <ChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
@@ -111,10 +163,10 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
         </button>
 
         {showEmailText && (
-          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+          <div id="email-analisado" className="mt-3 p-3 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-700 whitespace-pre-wrap">
-              {result.email_texto.length > 1000
-                ? result.email_texto.substring(0, 1000) + '...'
+              {result.email_texto?.length > 1200
+                ? result.email_texto.substring(0, 1200) + '...'
                 : result.email_texto}
             </p>
           </div>
@@ -122,7 +174,7 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
       </div>
 
       {onReset && (
-        <button onClick={onReset} className="button-secondary mt-4">
+        <button onClick={onReset} className="button-secondary mt-4" aria-label="Limpar resultado">
           Limpar
         </button>
       )}
