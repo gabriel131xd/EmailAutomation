@@ -1,5 +1,11 @@
 # 📧 EmailAutomation
 
+[![Deploy on Vercel](https://img.shields.io/badge/Frontend-Vercel-000?logo=vercel)](https://email-automation-mu.vercel.app)
+[![Deploy on Render](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render)](https://emailautomation-mqp7.onrender.com)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI-API-412991?logo=openai&logoColor=white)
+
 Automação inteligente para **classificação e resposta de e-mails**.  
 Permite analisar textos ou arquivos `.txt`/`.pdf`, identificar se são **Produtivos** ou **Improdutivos** e sugerir automaticamente uma resposta educada e objetiva usando **IA**.
 
