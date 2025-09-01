@@ -178,7 +178,7 @@ function App() {
               >
                 {isAnalyzing ? (
                   <>
-                    <Loader2 className="w-4 h-4 spinner" /> Analisando...
+                    <Loader2 className="spinner spinner-neon" /> Analisando...
                   </>
                 ) : (
                   <>
@@ -211,6 +211,7 @@ function App() {
 
             <div className="card">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Ou envie um arquivo (.txt / .pdf)</h3>
+              {/* agora com o loading local, nada centralizado na tela */}
               <UploadZone onFileSelect={handleFileUpload} disabled={isAnalyzing} loading={isAnalyzing} />
             </div>
 

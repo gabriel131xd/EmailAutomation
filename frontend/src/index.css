@@ -8,7 +8,7 @@ body {
   margin: 0;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
+  color: #0f172a;
 }
 
 .container-responsive {
@@ -32,6 +32,17 @@ body {
 
 .textarea-custom {
   @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.textarea-custom::placeholder {
+  color: #6b7280;
+}
+
+textarea[readonly].textarea-custom {
+  background: #f8fafc;
+  color: #0f172a;
 }
 
 .upload-zone {
@@ -52,7 +63,6 @@ body {
 .progress-bar { @apply w-full bg-gray-200 rounded-full h-2; }
 .progress-fill { @apply bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out; }
 
-/* Toast (mensagens) */
 .toast {
   position: fixed;
   top: 16px;
@@ -77,7 +87,7 @@ kbd {
 }
 
 .spinner-neon {
-  color: #00eaff; 
+  color: #00eaff;
   filter: drop-shadow(0 0 6px #00eaff) drop-shadow(0 0 12px #00eaff);
 }
 
