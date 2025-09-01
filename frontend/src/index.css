@@ -3,19 +3,32 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-start: #6a89ff;
+  --bg-end: #8a62d6;
+  --brand: #2563eb;
+  --brand-600: #2563eb;
+  --brand-700: #1d4ed8;
+  --accent: #22d3ee;
+  --danger: #ef4444;
+  --muted: #f3f4f6;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   margin: 0;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: radial-gradient(1200px 800px at 20% 10%, rgba(255, 255, 255, .08), transparent 40%),
+             radial-gradient(1000px 700px at 80% 30%, rgba(255, 255, 255, .07), transparent 42%),
+             linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
   color: #0f172a;
 }
 
 .container-responsive {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 1rem;
 }
 
 .card {
@@ -23,36 +36,29 @@ body {
 }
 
 .button-primary {
-  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow;
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md;
 }
 
 .button-secondary {
-  @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200 shadow;
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-xl transition-colors duration-200 shadow-sm;
 }
 
 .textarea-custom {
-  @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none;
+  @apply w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none;
   background: #ffffff;
-  color: #0f172a;
-}
-
-.textarea-custom::placeholder {
-  color: #6b7280;
-}
-
-textarea[readonly].textarea-custom {
-  background: #f8fafc;
+  border-color: #e5e7eb;
   color: #0f172a;
 }
 
 .upload-zone {
-  @apply border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-colors duration-200 cursor-pointer bg-white;
+  @apply border-2 border-dashed rounded-2xl p-8 text-center transition-colors duration-200 cursor-pointer;
+  border-color: #d1d5db;
+  background: #ffffff;
 }
-.upload-zone.active {
-  @apply border-blue-500 bg-blue-50;
-}
+.upload-zone:hover { border-color: #a3a3a3; }
+.upload-zone.active { border-color: var(--brand-600); background: #eef5ff; }
 
-.badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+.badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold; }
 .badge-green { @apply bg-green-100 text-green-800; }
 .badge-red { @apply bg-red-100 text-red-800; }
 .badge-blue { @apply bg-blue-100 text-blue-800; }
@@ -60,38 +66,25 @@ textarea[readonly].textarea-custom {
 .badge-purple { @apply bg-purple-100 text-purple-800; }
 .badge-gray { @apply bg-gray-100 text-gray-800; }
 
-.progress-bar { @apply w-full bg-gray-200 rounded-full h-2; }
-.progress-fill { @apply bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out; }
+.progress-bar { @apply w-full rounded-full h-2 bg-gray-200; }
+.progress-fill { @apply h-2 rounded-full transition-all duration-500 ease-out; background: var(--brand-600); }
+
+.fade-in { animation: fadeIn .45s ease-in; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+
+.spinner { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
 
 .toast {
   position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 50;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-weight: 500;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  padding: .75rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0,0,0,.12);
+  z-index: 70;
+  font-weight: 600;
 }
-.toast-success { background: #10b981; color: white; }
-.toast-error { background: #ef4444; color: white; }
-
-.spinner { animation: spin 1s linear infinite; }
-@keyframes spin { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
-
-kbd {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-}
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-.spinner-neon {
-  color: #00eaff;
-  filter: drop-shadow(0 0 6px #00eaff) drop-shadow(0 0 12px #00eaff);
-}
-
-.spinner-large {
-  width: 36px;
-  height: 36px;
-}
+.toast-success { background: #ecfeff; color: #0369a1; border: 1px solid #a5f3fc; }
+.toast-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }

@@ -1,8 +1,9 @@
+# backend/classificar.py
 import os
 import json
 import time
 import requests
-from typing import Dict
+from typing import Dict, Tuple
 
 HF_MODEL = os.getenv("HF_MODEL", "joeddav/xlm-roberta-large-xnli")
 HF_API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
@@ -15,7 +16,7 @@ INFERENCE_LABELS = {
     "Reclamação": "Reclamação (problema, defeito, não funciona, erro, atraso, troca, garantia)",
     "Orçamento": "Orçamento (preço, valor, cotação, proposta, orçamento para X unidades)",
     "Dúvida": "Dúvida (como faço, poderia informar, esclarecimento, ajuda, instruções)",
-    "Improdutivo": "Improdutivo (spam, irrelevante, sem pedido, assunto não relacionado)"
+    "Improdutivo": "Improdutivo (spam, irrelevante, sem pedido, assunto não relacionado)",
 }
 
 SUB_TO_MAIN = {
@@ -26,26 +27,54 @@ SUB_TO_MAIN = {
     "Dúvida": "Produtivo",
 }
 
-DEFAULT_THRESHOLD = 0.50
+DEFAULT_THRESHOLD = 0.45
+
+
+def _norm(texto: str) -> str:
+    return (texto or "").lower().strip()
+
+
+def _hit(texto: str, termos) -> bool:
+    t = _norm(texto)
+    return any(term in t for term in termos)
+
+
+def _heuristica_categoria(texto: str, sub_prevista: str) -> Tuple[str, float, bool]:
+    """
+    Ajuste determinístico por palavras-chave.
+    Sempre que detectar um padrão forte, força a subcategoria correspondente.
+    Retorna: (subcategoria, confianca_minima, via_fallback_bool)
+    """
+    t = _norm(texto)
+
+    termos_agr = ["obrigado", "agradeço", "agradeco", "valeu", "satisfeito", "satisfeita"]
+    termos_rec = [
+        "reclamação", "reclamacao", "problema", "defeito", "erro",
+        "não funciona", "nao funciona", "quebrado", "troca",
+        "garantia", "atraso", "atrasado", "danificado", "refund",
+        "reembolso"
+    ]
+    termos_orc = ["orçamento", "orcamento", "preço", "preco", "valor", "cotação", "cotacao", "proposta", "cotacao"]
+    termos_duv = ["dúvida", "duvida", "como faço", "como faco", "poderia informar", "esclarecimento", "ajuda", "instruções", "instrucoes"]
+
+    if _hit(t, termos_rec):
+        return "Reclamação", 0.80, True
+    if _hit(t, termos_orc):
+        return "Orçamento", 0.75, True
+    if _hit(t, termos_duv):
+        return "Dúvida", 0.70, True
+    if _hit(t, termos_agr):
+        return "Agradecimento", 0.80, True
+
+    if sub_prevista in CATEGORIES:
+        return sub_prevista, 0.0, False
+
+    return "Improdutivo", 0.60, True
 
 
 def regrasFallback(texto: str) -> Dict:
-    t = (texto or "").lower()
-
-    if any(p in t for p in ["obrigado", "agradeço", "agradeco", "valeu"]):
-        sub = "Agradecimento"
-        return {"categoria": sub, "confianca": 0.80, "principal": SUB_TO_MAIN[sub], "via_fallback": True}
-
-    if any(p in t for p in ["reclamação", "reclamacao", "problema", "erro", "não funciona", "nao funciona", "defeito"]):
-        sub = "Reclamação"
-        return {"categoria": sub, "confianca": 0.75, "principal": SUB_TO_MAIN[sub], "via_fallback": True}
-
-    if any(p in t for p in ["orçamento", "orcamento", "preço", "preco", "valor", "cotação", "cotacao", "proposta"]):
-        sub = "Orçamento"
-        return {"categoria": sub, "confianca": 0.70, "principal": SUB_TO_MAIN[sub], "via_fallback": True}
-
-    sub = "Improdutivo"
-    return {"categoria": sub, "confianca": 0.60, "principal": SUB_TO_MAIN[sub], "via_fallback": True}
+    sub, conf, via = _heuristica_categoria(texto, "Improdutivo")
+    return {"categoria": sub, "confianca": conf, "principal": SUB_TO_MAIN[sub], "via_fallback": via}
 
 
 def cabecalho_hf() -> Dict[str, str]:
@@ -61,15 +90,34 @@ def corpo_hf(texto: str) -> Dict:
         "parameters": {
             "candidate_labels": list(INFERENCE_LABELS.values()),
             "multi_label": False,
-            "hypothesis_template": "Este e-mail é sobre {}."
-        }
+            "hypothesis_template": "Este e-mail é sobre {}.",
+        },
     }
 
 
-def classificar_email(texto: str,
-                      threshold: float = DEFAULT_THRESHOLD,
-                      timeout_seg: float = 12.0,
-                      tentativas: int = 1) -> Dict:
+def _inferir_hf(texto: str, timeout_seg: float) -> Dict:
+    resp = requests.post(
+        HF_API_URL,
+        headers=cabecalho_hf(),
+        data=json.dumps(corpo_hf(texto)),
+        timeout=timeout_seg,
+    )
+    return resp.json()
+
+
+def _mapear_label_inferencia(rotulo_inferencia: str) -> str:
+    for sub, frase in INFERENCE_LABELS.items():
+        if frase == rotulo_inferencia:
+            return sub
+    return "Improdutivo"
+
+
+def classificar_email(
+    texto: str,
+    threshold: float = DEFAULT_THRESHOLD,
+    timeout_seg: float = 12.0,
+    tentativas: int = 1,
+) -> Dict:
     if not texto or not texto.strip():
         sub = "Improdutivo"
         return {"categoria": sub, "principal": SUB_TO_MAIN[sub], "confianca": 0.0, "via_fallback": True}
@@ -77,20 +125,14 @@ def classificar_email(texto: str,
     if not HF_API_TOKEN:
         return regrasFallback(texto)
 
-    ultimoErro = None
+    ultimo_erro = None
 
     for tentativa in range(tentativas + 1):
         try:
-            resp = requests.post(
-                HF_API_URL,
-                headers=cabecalho_hf(),
-                data=json.dumps(corpo_hf(texto)),
-                timeout=timeout_seg,
-            )
-            dados = resp.json()
+            dados = _inferir_hf(texto, timeout_seg)
         except Exception as e:
-            ultimoErro = str(e)
-            dados = {"error": ultimoErro}
+            ultimo_erro = str(e)
+            dados = {"error": ultimo_erro}
 
         if isinstance(dados, dict) and "error" in dados:
             if tentativa < tentativas:
@@ -100,21 +142,24 @@ def classificar_email(texto: str,
 
         labels = dados.get("labels")
         scores = dados.get("scores")
-
         if not labels or not scores or len(labels) != len(scores):
             return regrasFallback(texto)
 
         rotulo_inferencia = labels[0]
-        sub = next((k for k, v in INFERENCE_LABELS.items() if v == rotulo_inferencia), "Improdutivo")
+        sub_prevista = _mapear_label_inferencia(rotulo_inferencia)
         confianca = float(scores[0])
 
         if confianca < threshold:
-            sub = "Improdutivo"
+            sub_prevista = "Improdutivo"
+
+        sub_ajustada, conf_min, via_fallback = _heuristica_categoria(texto, sub_prevista)
+        conf_final = max(confianca, conf_min)
 
         return {
-            "categoria": sub,
-            "principal": SUB_TO_MAIN[sub],
-            "confianca": max(0.0, min(1.0, confianca))
+            "categoria": sub_ajustada,
+            "principal": SUB_TO_MAIN[sub_ajustada],
+            "confianca": max(0.0, min(1.0, conf_final)),
+            "via_fallback": via_fallback,
         }
 
     return regrasFallback(texto)
