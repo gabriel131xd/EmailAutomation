@@ -1,13 +1,14 @@
 import React, { useState, useRef } from 'react';
-import { Upload, File, AlertCircle } from 'lucide-react';
+import { Upload, File, AlertCircle, Loader2 } from 'lucide-react';
 import { validateFile } from '../lib/api';
 
 interface UploadZoneProps {
   onFileSelect: (file: File) => void | Promise<void>;
   disabled?: boolean;
+  loading?: boolean;
 }
 
-export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
+export default function UploadZone({ onFileSelect, disabled, loading }: UploadZoneProps) {
   const [isDragActive, setIsDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,13 +54,20 @@ export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) 
   return (
     <div className="w-full">
       <div
-        className={`upload-zone ${isDragActive ? 'active' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`relative upload-zone ${isDragActive ? 'active' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={handleClick}
+        aria-busy={loading ? 'true' : 'false'}
       >
+        {loading && (
+          <div className="absolute top-3 right-3" aria-hidden>
+            <Loader2 className="spinner spinner-neon spinner-large" />
+          </div>
+        )}
+
         <input
           ref={fileInputRef}
           type="file"
@@ -68,9 +76,9 @@ export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) 
           onChange={handleFileInput}
           disabled={disabled}
         />
-        <div className="flex flex-col items-center text-slate-900">
+        <div className="flex flex-col items-center">
           <Upload className={`w-12 h-12 mb-4 ${isDragActive ? 'text-blue-500' : 'text-gray-400'}`} />
-          <h3 className="text-lg font-medium mb-1">
+          <h3 className="text-lg font-medium text-gray-900 mb-1">
             {isDragActive ? 'Solte o arquivo aqui' : 'Upload de arquivo'}
           </h3>
           <p className="text-sm text-gray-600 mb-4 text-center">

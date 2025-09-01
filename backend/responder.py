@@ -27,7 +27,7 @@ def _montar_prompt(categoria: str, texto: str) -> str:
 def _gerar(prompt: str, timeout: float = 20.0) -> Optional[str]:
     client = _get_client()
     if not client:
-        return None  # sem chave -> IA-pura retorna vazio depois
+        return None
 
     api = client.with_options(timeout=timeout)
     try:
@@ -54,13 +54,12 @@ def _gerar(prompt: str, timeout: float = 20.0) -> Optional[str]:
 def sugerir_resposta(categoria: str, texto: str = "") -> str:
     t = (texto or "").strip()
     if not t:
-        return ""  # IA-pura: nada de fallback de conteúdo
+        return ""
 
     prompt = _montar_prompt(categoria, t)
 
-    # retry leve p/ estabilidade
     for _ in range(2):
         out = _gerar(prompt)
         if out:
             return out
-    return ""  # falhou a IA -> string vazia
+    return "" 

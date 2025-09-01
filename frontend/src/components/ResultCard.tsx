@@ -26,9 +26,7 @@ export default function ResultCard({ result, onReset, onNewAnalysis }: ResultCar
     const blob = new Blob([result.resposta_sugerida || ''], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'resposta_sugerida.txt';
-    a.click();
+    a.href = url; a.download = 'resposta_sugerida.txt'; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -36,9 +34,7 @@ export default function ResultCard({ result, onReset, onNewAnalysis }: ResultCar
     const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'analise_email.json';
-    a.click();
+    a.href = url; a.download = 'analise_email.json'; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -59,7 +55,7 @@ export default function ResultCard({ result, onReset, onNewAnalysis }: ResultCar
   return (
     <div className="card fade-in">
       <div className="flex items-start justify-between mb-6 gap-3">
-        <h2 className="text-xl font-semibold">Resultado da Análise</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Resultado da Análise</h2>
         <span className={`badge ${getCategoryColor(result.classificacao.categoria)}`}>
           {result.classificacao.categoria}
         </span>
@@ -72,10 +68,7 @@ export default function ResultCard({ result, onReset, onNewAnalysis }: ResultCar
             <span className="text-sm text-gray-600">{formatPercent(result.classificacao.confianca)}</span>
           </div>
           <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${result.classificacao.confianca * 100}%` }}
-            />
+            <div className="progress-fill" style={{ width: `${result.classificacao.confianca * 100}%` }} />
           </div>
         </div>
 
@@ -93,11 +86,10 @@ export default function ResultCard({ result, onReset, onNewAnalysis }: ResultCar
           <div className="flex flex-wrap gap-2">
             <button
               onClick={handleCopy}
-              className={`px-3 py-1 rounded-md text-sm transition-colors inline-flex items-center gap-1 ${
+              className={`px-3 py-1 rounded-md text-sm transition-transform shadow-sm inline-flex items-center gap-1 ${
                 copied ? 'bg-green-100 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
               }`}
               aria-label="Copiar resposta sugerida"
-              title="Copiar resposta sugerida"
             >
               {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copiado!' : 'Copiar'}
@@ -105,9 +97,8 @@ export default function ResultCard({ result, onReset, onNewAnalysis }: ResultCar
 
             <button
               onClick={downloadTxt}
-              className="px-3 py-1 rounded-md text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 inline-flex items-center gap-1"
+              className="px-3 py-1 rounded-md text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 inline-flex items-center gap-1 shadow-sm"
               aria-label="Baixar resposta como .txt"
-              title="Baixar .txt"
             >
               <FileDown className="w-4 h-4" />
               .txt
@@ -115,9 +106,8 @@ export default function ResultCard({ result, onReset, onNewAnalysis }: ResultCar
 
             <button
               onClick={downloadJson}
-              className="px-3 py-1 rounded-md text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 inline-flex items-center gap-1"
+              className="px-3 py-1 rounded-md text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 inline-flex items-center gap-1 shadow-sm"
               aria-label="Baixar análise como .json"
-              title="Baixar .json"
             >
               <FileJson className="w-4 h-4" />
               .json
@@ -126,9 +116,8 @@ export default function ResultCard({ result, onReset, onNewAnalysis }: ResultCar
             {onNewAnalysis && (
               <button
                 onClick={onNewAnalysis}
-                className="px-3 py-1 rounded-md text-sm bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-1"
+                className="px-3 py-1 rounded-md text-sm bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-1 shadow-md transition-transform"
                 aria-label="Nova análise"
-                title="Nova análise"
               >
                 <RefreshCw className="w-4 h-4" />
                 Nova análise

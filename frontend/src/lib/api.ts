@@ -1,4 +1,3 @@
-// Base da API (pega do .env)
 const API_BASE = import.meta.env.VITE_API_BASE as string;
 
 export interface ApiResponse {
@@ -16,7 +15,6 @@ export interface ApiError {
   status: number;
 }
 
-// util: fetch com timeout (evita travar quando o Render "acorda")
 async function fetchWithTimeout(input: RequestInfo, init: RequestInit = {}, ms = 30000) {
   const ctrl = new AbortController();
   const id = setTimeout(() => ctrl.abort(), ms);
@@ -28,7 +26,6 @@ async function fetchWithTimeout(input: RequestInfo, init: RequestInit = {}, ms =
   }
 }
 
-// Verificar saúde da API com retries (Render pode "acordar")
 export async function checkHealth(): Promise<boolean> {
   const tries = 3;
   for (let i = 0; i < tries; i++) {
@@ -36,15 +33,12 @@ export async function checkHealth(): Promise<boolean> {
       const res = await fetchWithTimeout(`${API_BASE}/`, {}, 8000);
       if (res.ok) return true;
     } catch {
-      // ignore e tenta de novo
     }
-    // backoff pequeno
     await new Promise(r => setTimeout(r, 500 * (i + 1)));
   }
   return false;
 }
 
-// Analisar texto (JSON)
 export async function analyzeText(texto: string): Promise<ApiResponse> {
   const response = await fetchWithTimeout(`${API_BASE}/upload`, {
     method: 'POST',
@@ -62,14 +56,13 @@ export async function analyzeText(texto: string): Promise<ApiResponse> {
   return response.json();
 }
 
-// Analisar arquivo (FormData)
 export async function analyzeFile(file: File): Promise<ApiResponse> {
   const formData = new FormData();
-  formData.append('file', file); // o backend espera o campo "file"
+  formData.append('file', file);
 
   const response = await fetchWithTimeout(`${API_BASE}/upload`, {
     method: 'POST',
-    body: formData, // não setar Content-Type manualmente
+    body: formData,
   });
 
   if (!response.ok) {
@@ -82,7 +75,6 @@ export async function analyzeFile(file: File): Promise<ApiResponse> {
   return response.json();
 }
 
-// Extrair mensagem de erro
 async function getErrorMessage(response: Response): Promise<string> {
   try {
     const errorData = await response.json();
@@ -107,7 +99,6 @@ async function getErrorMessage(response: Response): Promise<string> {
   }
 }
 
-// Validar arquivo
 export function validateFile(file: File): { valid: boolean; error?: string } {
   const maxSize = 10 * 1024 * 1024; // 10MB
   const allowedTypes = ['.txt', '.pdf'];
