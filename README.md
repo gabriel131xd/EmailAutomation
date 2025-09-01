@@ -41,6 +41,18 @@ Permite analisar textos ou arquivos `.txt`/`.pdf`, identificar se são **Produti
 🔗 Backend (Render): https://emailautomation-mqp7.onrender.com
 
 🔗 Frontend (Vercel): https://email-automation-mu.vercel.app
+
+⚠️ Aviso Importante
+
+Este projeto utiliza o Render (plano gratuito) para hospedar o backend.
+Isso significa que, se a API ficar muito tempo sem uso, o servidor hiberna automaticamente.
+
+Quando isso acontece, ao abrir a aplicação pode aparecer a mensagem:
+“API fora do ar”.
+
+Basta clicar no botão “Tentar novamente” (já presente na interface).
+
+Isso força o Render a “acordar” o backend e, após alguns segundos, a API volta a funcionar normalmente. ✅
 ```plaintext
 
 1. Clonar o repositório
