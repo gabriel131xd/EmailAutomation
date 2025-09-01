@@ -36,30 +36,6 @@ Permite analisar textos ou arquivos `.txt`/`.pdf`, identificar se são **Produti
 - Lucide-React (ícones SVG modernos)
 
 ---
-
-## 📂 Estrutura do Projeto
-
-
-EmailAutoUmation/
-│
-├── backend/               # API Flask
-│   ├── app.py             # Rotas principais
-│   ├── classificar.py     # Classificação de e-mails
-│   ├── responder.py       # Sugestão de resposta (OpenAI)
-│   ├── utils.py           # Utilidades (PDF / TXT)
-│   ├── requirements.txt   # Dependências
-│   ├── runtime.txt        # Versão do Python
-│   └── Procfile           # Start command (Gunicorn)
-│
-└── frontend/              # Interface React
-    ├── public/            # Arquivos públicos
-    ├── src/               # Código-fonte
-    │   ├── components/    # Componentes (UploadZone, ResultCard, etc.)
-    │   ├── lib/           # API e utils
-    │   ├── App.tsx        # App principal
-    │   └── main.tsx       # Entrada
-    ├── package.json       # Dependências
-    └── tailwind.config.js # Configuração Tailwind
 ## 🌍 Deploy Online
 
 🔗 Backend (Render): https://emailautomation-mqp7.onrender.com
